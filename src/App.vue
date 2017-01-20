@@ -4,7 +4,7 @@
     <table cellspacing="0">
       <thead>
         <tr>
-          <th v-for="name in allColumnNames">{{ name }}</th>
+          <th v-for="name in allColumnNames"><input readonly :value="name"></input></th>
         </tr>
       </thead>
       <tbody>
@@ -12,9 +12,11 @@
           <td v-for="name in allColumnNames">
             <input :value="r[name]"
                    v-focus="index === rowIndexFocussed && name === columnNameFocussed"
+                   :class="{ hightlight1 : index === rowIndexFocussed }"
+                   @focus="focus(index, name)"
                    @input="$set(r, name, arguments[0].target.value)"
-                   @keydown.enter="insertRow(index+1); focus(index+1, name);"
-                   @keydown.shift.enter="insertRow(index); focus(index, name);"
+                   @keydown.shift.down="insertRow(index+1, name)"
+                   @keydown.shift.up="insertRow(index, name)"
                    @keydown.ctrl.88="deleteRow(index)"
                    @keydown.down="focus(index+1, name)"
                    @keydown.up="focus(index-1, name)"
@@ -30,20 +32,28 @@
 
 import Vue from 'vue';
 import _ from 'lodash';
+import LZString from 'lz-string';
 
-Vue.directive('focus', {
-  update(el, binding) {
-    if (binding.value) {
-      Vue.nextTick(() => {
-        el.focus();
-      });
-    }
-  },
+Vue.directive('focus', (el, binding) => {
+  if (binding.value && !binding.oldValue) {
+    Vue.nextTick(() => {
+      el.focus();
+    });
+  }
 });
 
 export default {
   name: 'app',
   components: {
+  },
+  mounted() {
+    if (window.location.hash) {
+      const hashString = window.location.hash.slice(1);
+      const jsonString = LZString.decompressFromEncodedURIComponent(hashString);
+      const data = JSON.parse(jsonString);
+      this.columnNames = data.columnNames;
+      this.rows = data.rows;
+    }
   },
   data() {
     return {
@@ -78,8 +88,11 @@ export default {
       this.rowIndexFocussed = index2;
       this.columnNameFocussed = columnName;
     },
-    insertRow(index) {
+    insertRow(index, name) {
       this.rows = [...this.rows.slice(0, index), {}, ...this.rows.slice(index)];
+      Vue.nextTick(() => {
+        this.focus(index, name);
+      });
     },
     deleteRow(index) {
       this.rows.splice(index, 1);
@@ -88,6 +101,10 @@ export default {
   watch: {
     rows: {
       handler() {
+        window.location.hash = LZString.compressToEncodedURIComponent(JSON.stringify({
+          columnNames: this.columnNames,
+          rows: this.rows,
+        }));
       },
       deep: true,
     },
@@ -118,11 +135,34 @@ table {
   border-collapse: collapse;
 }
 
+th {
+  padding: 0px;
+}
+
+th > input {
+  text-align: center;
+}
+
 td {
   padding: 0px;
+}
+
+input {
+  border: 1px solid #cccccc; /* Here */
+  -webkit-appearance: none; 
+  -moz-appearance: none; 
+}
+
+td > input:focus {
+  background-color: #cccccc;
 }
 
 .column-names-input {
   width : 100%;
 }
+
+.hightlight1 {
+  background-color: #eeeeee;
+}
+
 </style>
