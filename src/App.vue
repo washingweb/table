@@ -83,6 +83,12 @@ export default {
     },
   },
   methods: {
+    updateHash() {
+      window.location.hash = LZString.compressToEncodedURIComponent(JSON.stringify({
+        columnNames: this.columnNames,
+        rows: this.rows,
+      }));
+    },
     focus(index, columnName) {
       const index2 = (index + this.rows.length) % this.rows.length;
       this.rowIndexFocussed = index2;
@@ -99,12 +105,12 @@ export default {
     },
   },
   watch: {
+    columnNames() {
+      this.updateHash();
+    },
     rows: {
       handler() {
-        window.location.hash = LZString.compressToEncodedURIComponent(JSON.stringify({
-          columnNames: this.columnNames,
-          rows: this.rows,
-        }));
+        this.updateHash();
       },
       deep: true,
     },
