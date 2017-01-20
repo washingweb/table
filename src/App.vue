@@ -11,10 +11,13 @@
         <tr v-for="(r, index) in rows">
           <td v-for="name in allColumnNames">
             <input :value="r[name]"
+                   v-focus="index === rowIndexFocussed && name === columnNameFocussed"
                    @input="$set(r, name, arguments[0].target.value)"
-                   @keydown.enter="insertRow(index+1)"
-                   @keydown.shift.enter="insertRow(index)"
+                   @keydown.enter="insertRow(index+1); focus(index+1, name);"
+                   @keydown.shift.enter="insertRow(index); focus(index, name);"
                    @keydown.ctrl.88="deleteRow(index)"
+                   @keydown.down="focus(index+1, name)"
+                   @keydown.up="focus(index-1, name)"
                    />
           </td>
         </tr>
@@ -25,7 +28,18 @@
 
 <script>
 
+import Vue from 'vue';
 import _ from 'lodash';
+
+Vue.directive('focus', {
+  update(el, binding) {
+    if (binding.value) {
+      Vue.nextTick(() => {
+        el.focus();
+      });
+    }
+  },
+});
 
 export default {
   name: 'app',
@@ -37,6 +51,8 @@ export default {
         {},
       ],
       columnNames: [],
+      rowIndexFocussed: undefined,
+      columnNameFocussed: undefined,
     };
   },
   computed: {
@@ -57,6 +73,11 @@ export default {
     },
   },
   methods: {
+    focus(index, columnName) {
+      const index2 = (index + this.rows.length) % this.rows.length;
+      this.rowIndexFocussed = index2;
+      this.columnNameFocussed = columnName;
+    },
     insertRow(index) {
       this.rows = [...this.rows.slice(0, index), {}, ...this.rows.slice(index)];
     },
