@@ -1,28 +1,59 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <hello></hello>
+    <input class="column-names-input" type="text" v-model="columnNamesInput"></input>
+    <MyTable :rows="rows" :column-names="columnNames" />
   </div>
 </template>
 
 <script>
-import Hello from './components/Hello';
+
+import MyTable from './components/Table';
 
 export default {
   name: 'app',
   components: {
-    Hello,
+    MyTable,
+  },
+  data() {
+    return {
+      rows: [],
+      columnNames: ['a', 'b', 'c', 'd'],
+    };
+  },
+  computed: {
+    columnNamesInput: {
+      get() {
+        return this.columnNames.join(',');
+      },
+      set(newValue) {
+        this.columnNames = newValue
+                              .trim()
+                              .split(/,|，/)
+                              .map(k => k.trim());
+      },
+    },
   },
 };
 </script>
 
 <style>
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin  : 0px;
+  padding : 0px;
+}
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+}
+</style>
+
+<style scoped>
+.column-names-input {
+  width : 100%;
 }
 </style>
