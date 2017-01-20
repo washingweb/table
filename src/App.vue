@@ -17,7 +17,7 @@
                    @input="$set(r, name, arguments[0].target.value)"
                    @keydown.shift.down="insertRow(index+1, name)"
                    @keydown.shift.up="insertRow(index, name)"
-                   @keydown.ctrl.88="deleteRow(index)"
+                   @keydown.alt.88="deleteRow(index)"
                    @keydown.down="focus(index+1, name)"
                    @keydown.up="focus(index-1, name)"
                    />
