@@ -15,11 +15,9 @@
                    :class="{ hightlight1 : index === rowIndexFocussed }"
                    @focus="focus(index, name)"
                    @input="$set(r, name, arguments[0].target.value)"
-                   @keydown.shift.down="insertRow(index+1, name)"
-                   @keydown.shift.up="insertRow(index, name)"
                    @keydown.alt.88="deleteRow(index)"
-                   @keydown.down="focus(index+1, name)"
-                   @keydown.up="focus(index-1, name)"
+                   @keydown.down="down(index, name, $event)"
+                   @keydown.up="up(index, name, $event)"
                    />
           </td>
         </tr>
@@ -83,6 +81,20 @@ export default {
     },
   },
   methods: {
+    up(index, name, event) {
+      if (event.shiftKey) {
+        this.insertRow(index, name);
+      } else {
+        this.focus(index - 1, name);
+      }
+    },
+    down(index, name, event) {
+      if (event.shiftKey) {
+        this.insertRow(index + 1, name);
+      } else {
+        this.focus(index + 1, name);
+      }
+    },
     updateHash() {
       window.location.hash = LZString.compressToEncodedURIComponent(JSON.stringify({
         columnNames: this.columnNames,
@@ -97,7 +109,9 @@ export default {
     insertRow(index, name) {
       this.rows = [...this.rows.slice(0, index), {}, ...this.rows.slice(index)];
       Vue.nextTick(() => {
-        this.focus(index, name);
+        Vue.nextTick(() => {
+          this.focus(index, name);
+        });
       });
     },
     deleteRow(index) {
